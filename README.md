@@ -13,7 +13,8 @@ Requirements
 
 Usage
 -----
-```DTMFDecoder.py -h
+```
+DTMFDecoder.py -h
 usage: DTMFDecoder.py [-h] [--debug] [-t TONE_DURATION] [-N KERNEL]
                       [--Nfft NFFT] [--tds TDS] [--fds FDS]
                       filename
