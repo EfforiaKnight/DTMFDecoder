@@ -375,4 +375,9 @@ if __name__ == "__main__":
     test = DTMFDecoder(debug=args.debug, tone_duration=args.tone_duration,
             kernel=args.kernel, N_fft=args.Nfft, td_scalar=args.tds,
             fd_scalar=args.fds, lpf=args.lpf)
-    test.decode_signal(filename=args.filename)
+    try:
+        test.decode_signal(filename=args.filename)
+    except:
+        if args.debug:
+            plt.show()
+
