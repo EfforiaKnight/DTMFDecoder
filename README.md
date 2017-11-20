@@ -8,15 +8,15 @@ Requirements
 * numpy
 * matplotlib
 
-**Install with:**
+**Install with:**  
 `pip install -r requirement.txt`
 
 Usage
 -----
 ```
-DTMFDecoder.py -h
-usage: DTMFDecoder.py [-h] [--debug] [-t TONE_DURATION] [-N KERNEL]
-                      [--Nfft NFFT] [--tds TDS] [--fds FDS]
+usage: DTMFDecoder.py [-h] [--debug] [-t TONE_DURATION] [--Nfft NFFT]
+                      [--tds TDS] [--fds FDS] [-N KERNEL]
+                      [--lpf {convolution,moving_average}]
                       filename
 
 DTMF Decoder
@@ -32,10 +32,14 @@ Configuration options:
   -t TONE_DURATION, --tone-duration TONE_DURATION
                         tone duration sets duration of sample window [default:
                         0.04]
-  -N KERNEL, --kernel KERNEL
-                        kernel size [default: 3]
   --Nfft NFFT           number of points along transformation axis [default:
                         256]
   --tds TDS             Threshold scalar for time domain [default: 5]
   --fds FDS             Threshold scalar for frequency domain [default: 3]
+
+LPF configuration options:
+  -N KERNEL, --kernel KERNEL
+                        filter kernel size [default: 3]
+  --lpf {convolution,moving_average}
+                        filter type [default: convolution]
 ```

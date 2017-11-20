@@ -19,13 +19,14 @@ DTMF_KEYPAD = [["1", "2", "3"],
 
 class DTMFDecoder:
     def __init__(self, N_fft=256, tone_duration=0.04, kernel=3,
-                 td_scalar=5, fd_scalar=3, debug=False):
+                 td_scalar=5, fd_scalar=3, lpf="convolution", debug=False):
         # Config parameters
         self.N_fft = N_fft
         self.N = kernel
         self.td_scalar = td_scalar
         self.fd_scalar = fd_scalar
         self.tone_duration = tone_duration
+        self.lpf = lpf
 
         self.debug = debug
 
@@ -217,14 +218,21 @@ class DTMFDecoder:
         # for N = 1000
         # moving_average: 689 µs ± 46.4 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
         # convolve:       14 ms ± 166 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+        if self.lpf == "convolution":
+            s_filtered = np.abs(np.convolve(sig, np.ones(self.N) / self.N, mode='valid'))
+        elif self.lpf == "moving_average":
+            s_filtered = np.abs(self.moving_average(sig, window_width=self.N))
+        else:
+            raise Exception("{} is not supported!".format(self.lpf))
 
-        s_filtered = np.abs(np.convolve(sig, np.ones(self.N) / self.N, mode='valid'))
-        s_filtered = self.normalize(s_filtered)
+        # s_filtered = self.normalize(s_filtered)
         if self.debug:
             self.plot_time(s_filtered, self.time_ax[1], title="Filtered Signal in Time Domain")
 
+        sig_mean = np.mean(s_filtered)
+
         tone_candidates = np.array([(sample, amp) for (sample, amp) in enumerate(
-            s_filtered) if amp > np.mean(s_filtered) * self.td_scalar])
+            s_filtered) if amp > sig_mean * self.td_scalar])
 
         return tone_candidates
 
@@ -346,9 +354,6 @@ if __name__ == "__main__":
             "-t", "--tone-duration", default=0.04, type=float,
             help="tone duration sets duration of sample window [default: 0.04]")
     conf.add_argument(
-            "-N", "--kernel", default=3, type=int,
-            help="kernel size [default: 3]")
-    conf.add_argument(
             "--Nfft", default=256, type=int,
             help="number of points along transformation axis [default: 256]")
     conf.add_argument(
@@ -358,8 +363,16 @@ if __name__ == "__main__":
             "--fds", default=3, type=int,
             help="Threshold scalar for frequency domain [default: 3]")
 
+    lpf_conf = parser.add_argument_group("LPF configuration options")
+    lpf_conf.add_argument(
+            "-N", "--kernel", default=3, type=int,
+            help="filter kernel size [default: 3]")
+    lpf_conf.add_argument(
+            "--lpf", default="convolution", type=str, choices=["convolution", "moving_average"],
+            help="filter type [default: convolution]")
+
     args = parser.parse_args()
     test = DTMFDecoder(debug=args.debug, tone_duration=args.tone_duration,
             kernel=args.kernel, N_fft=args.Nfft, td_scalar=args.tds,
-            fd_scalar=args.fds)
+            fd_scalar=args.fds, lpf=args.lpf)
     test.decode_signal(filename=args.filename)
