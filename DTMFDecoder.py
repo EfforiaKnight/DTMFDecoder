@@ -143,15 +143,13 @@ class DTMFDecoder:
 
         return DTMF_KEYPAD[row][col]
 
-    def normalize(self, array, amp=1.0):
-        """ Normalizes a array so the maximum amplitude is +amp or -amp.
+    def normalize(self, array):
+        """ Normalizes positive array only.
 
         Parameters
         ----------
         array : (ndarray)
             signal array
-        amp : (float)
-            max amplitude (pos or neg) in result. Defaults to 1.0
 
         Returns
         ----------
@@ -159,7 +157,7 @@ class DTMFDecoder:
             normilized signal array
         """
         high, low = abs(max(array)), abs(min(array))
-        return amp * array / max(high, low)
+        return array / max(high, low)
 
     def read_wave(self, filename):
         """ Reads a wave file.
@@ -194,7 +192,7 @@ class DTMFDecoder:
         if nchannels == 2:
             array = array[::2]
 
-        return framerate, self.normalize(array), nframes
+        return framerate, array, nframes
 
     def find_candidates(self, sig):
         ''' Filter and find candidates whos amplitude are above threshold
@@ -225,7 +223,7 @@ class DTMFDecoder:
         else:
             raise Exception("{} is not supported!".format(self.lpf))
 
-        # s_filtered = self.normalize(s_filtered)
+        s_filtered = self.normalize(s_filtered)
         if self.debug:
             self.plot_time(s_filtered, self.time_ax[1], title="Filtered Signal in Time Domain")
 
