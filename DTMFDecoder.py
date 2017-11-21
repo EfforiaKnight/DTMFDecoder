@@ -171,7 +171,11 @@ class DTMFDecoder:
         array : (ndarray)
             normilized signal array
         """
-        fp = open_wave(filename, 'r')
+        try:
+            fp = open_wave(filename, 'r')
+        except (IOError, FileNotFoundError):
+            print("File '{}' wasn't found. Make sure you typed correctly".format(filename))
+            raise
 
         nchannels = fp.getnchannels()
         nframes = fp.getnframes()
@@ -375,7 +379,9 @@ if __name__ == "__main__":
             fd_scalar=args.fds, lpf=args.lpf)
     try:
         test.decode_signal(filename=args.filename)
-    except:
+    except Exception as ex:
         if args.debug:
             plt.show()
-
+            raise
+        print("Exception: {}".format(ex))
+        print("Exception class: {}".format(type(ex)))
